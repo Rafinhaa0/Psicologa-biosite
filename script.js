@@ -31,3 +31,26 @@ if (revealTargets.length && "IntersectionObserver" in window) {
   revealTargets.forEach((element) => revealObserver.observe(element));
 }
 
+// Native story-scroll: pin desktop panels and tilt incoming sections without smooth scrolling.
+const storyPanels = [...document.querySelectorAll("[data-story-stage] > .scroll-panel")];
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const supportsViewTimeline = window.CSS?.supports?.("animation-timeline: view()") ?? false;
+
+if (storyPanels.length > 1 && !reducedMotionQuery.matches && (supportsViewTimeline || "IntersectionObserver" in window)) {
+  storyPanels.forEach((panel, index) => {
+    panel.style.zIndex = String(index + 1);
+  });
+  document.documentElement.classList.add("has-story-scroll");
+
+  // Older browsers (including older iPhones) get a lightweight enter/exit transition.
+  if (!supportsViewTimeline && "IntersectionObserver" in window) {
+    const storyObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        entry.target.toggleAttribute("data-story-visible", entry.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: "0px 0px -18% 0px" });
+
+    storyPanels.slice(1).forEach((panel) => storyObserver.observe(panel));
+  }
+}
+

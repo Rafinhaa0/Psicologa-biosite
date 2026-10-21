@@ -41,6 +41,9 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
+@supports (overflow-x: clip) {
+  body { overflow-x: clip; }
+}
 img, svg { display: block; max-width: 100%; }
 button, summary { font: inherit; }
 a { color: inherit; }
@@ -449,14 +452,48 @@ html.has-scroll-reveal [data-scroll-reveal][data-revealed] {
   transition-delay: var(--reveal-delay, 0ms);
 }
 
-/* Keep sections in normal page flow; scroll reveal handles content entrance. */
+/* Story scroll keeps native page scrolling and lets each section enter as a paper panel. */
 .scroll-panel { position: relative; min-height: 100svh; }
 .hero.scroll-panel { min-height: max(100svh, 760px); }
 .links-section.scroll-panel { display: flex; flex-direction: column; justify-content: center; }
 
+.story-stage { position: relative; }
+html.has-story-scroll .story-stage:not(:first-child) > .scroll-panel {
+  --story-entry-angle: 30deg;
+  transform-origin: bottom left;
+  transform: rotate(var(--story-entry-angle));
+  transition: transform 560ms var(--ease-out);
+}
+html.has-story-scroll .story-stage:not(:first-child) > .scroll-panel[data-story-visible] { transform: rotate(0); }
+
+@supports (overflow-x: clip) {
+  @media (min-width: 641px) and (pointer: fine) {
+    html.has-story-scroll .story-stage:not(:last-child) {
+      display: flow-root;
+      padding-bottom: 100svh;
+      margin-bottom: -100svh;
+    }
+    html.has-story-scroll .scroll-panel { position: sticky; top: 0; }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  html.has-story-scroll .story-stage:not(:first-child) > .scroll-panel {
+    animation: story-panel-entry 1ms linear both;
+    animation-timeline: view(block);
+    animation-range: entry 0% entry 75%;
+    transition: none;
+  }
+  @keyframes story-panel-entry {
+    from { transform: rotate(var(--story-entry-angle, 30deg)); }
+    to { transform: rotate(0); }
+  }
+}
+
 @media (max-width: 640px), (pointer: coarse) {
   /* Keep mobile panel edges in their paper shape. */
   .scroll-panel { position: relative; top: auto; min-height: 100svh; }
+  html.has-story-scroll .story-stage:not(:first-child) > .scroll-panel { --story-entry-angle: 8deg; }
   .hero.scroll-panel { min-height: max(100svh, 750px); }
   .links-section.scroll-panel {
     min-height: 100svh;
@@ -488,6 +525,8 @@ html.has-scroll-reveal [data-scroll-reveal][data-revealed] {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  html.has-story-scroll .story-stage:not(:last-child) { padding-bottom: 0; margin-bottom: 0; }
+  html.has-story-scroll .scroll-panel { position: relative; top: auto; transform: none !important; animation: none !important; }
   html.has-scroll-reveal [data-scroll-reveal] { opacity: 0; translate: none; scale: 1; transition: opacity 180ms ease !important; }
   html.has-scroll-reveal [data-scroll-reveal][data-revealed] { opacity: 1; transition-delay: 0ms !important; }
   .link-tile::before { animation: none; opacity: .36; transform: none; }
