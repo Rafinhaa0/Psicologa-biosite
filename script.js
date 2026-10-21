@@ -14,3 +14,29 @@ if (!useNativeTouchScroll && typeof window.Lenis === "function") {
   });
 }
 
+// Replay the reveal each time content enters the viewport, including on scroll-back.
+const revealTargets = document.querySelectorAll("[data-scroll-reveal]");
+
+if (revealTargets.length && "IntersectionObserver" in window) {
+  document.querySelectorAll("[data-reveal-stagger]").forEach((group) => {
+    [...group.children]
+      .filter((element) => element.hasAttribute("data-scroll-reveal"))
+      .forEach((element, index) => {
+        element.style.setProperty("--reveal-delay", `${index * 75}ms`);
+      });
+  });
+
+  document.documentElement.classList.add("has-scroll-reveal");
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.target.toggleAttribute("data-revealed", entry.isIntersecting);
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: "0px 0px -8% 0px",
+  });
+
+  revealTargets.forEach((element) => revealObserver.observe(element));
+}
+
