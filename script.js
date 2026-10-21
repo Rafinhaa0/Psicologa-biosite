@@ -5,14 +5,12 @@ document.querySelectorAll('a[href*="wa.me/"]').forEach((link) => {
   link.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(currentMessage)}`;
 });
 
-// Keep the page in vanilla JavaScript while Lenis smooths wheel and anchor scrolling.
-if (typeof window.Lenis === "function") {
-  const syncTouchScroll = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
-
+// Use native scrolling on touch/small screens; keep Lenis for desktop wheel scrolling.
+const useNativeTouchScroll = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
+if (!useNativeTouchScroll && typeof window.Lenis === "function") {
   new window.Lenis({
     autoRaf: true,
     anchors: true,
-    syncTouch: syncTouchScroll,
   });
 }
 
