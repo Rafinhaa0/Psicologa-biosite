@@ -5,15 +5,6 @@ document.querySelectorAll('a[href*="wa.me/"]').forEach((link) => {
   link.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(currentMessage)}`;
 });
 
-// Use native scrolling on touch/small screens; keep Lenis for desktop wheel scrolling.
-const useNativeTouchScroll = window.matchMedia("(pointer: coarse), (max-width: 640px)").matches;
-if (!useNativeTouchScroll && typeof window.Lenis === "function") {
-  new window.Lenis({
-    autoRaf: true,
-    anchors: true,
-  });
-}
-
 // Replay the reveal each time content enters the viewport, including on scroll-back.
 const revealTargets = document.querySelectorAll("[data-scroll-reveal]");
 
